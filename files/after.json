@@ -1,0 +1,20 @@
+{
+  "common": {
+    "setting1": "Value 1",
+    "setting3": true,
+    "setting4": "blah blah",
+    "setting5": {
+      "key": "value5"
+    }
+  },
+
+  "group1": {
+    "baz": "bas",
+    "foo": "bar"
+
+  },
+  "group3": {
+    "fee": "dyfhg"
+  },
+  "group4": "asd"
+}

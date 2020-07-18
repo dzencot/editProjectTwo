@@ -1,0 +1,20 @@
+{
+    "require": {
+        "funct/funct": "^1.5",
+        "ext-json": "*",
+        "php-ds/php-ds": "^1.2",
+        "tightenco/collect": "^7.12",
+        "nesbot/carbon": "^2.35",
+        "danielstjules/stringy": "~3.1.0",
+        "symfony/yaml": "^5.1"
+    },
+
+    "autoload": {
+        "files": [
+            "vendor/php-immutable-fs-trees-master/src/trees.php",
+            "./diff/DiffFiles.php",
+            "./diff/DiffArray.php",
+            "./diff/Render.php"
+        ]
+    }
+}
