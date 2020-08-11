@@ -17,11 +17,10 @@ function render($array)
         } elseif ($child['type'] === 'changed') {
             return [$child['type'], $child['name'], $child['children']];
         } elseif ($child['type'] === 'nested') {
-         
-              array_map(function ($subChild) {
-               
-                    return [render($subChild)];
-                
+         array_map(function ($subChild) {
+                if (is_array($subChild)) {
+                     return [render($subChild)];
+                }
             }, $child);
         }
 
