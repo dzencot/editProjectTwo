@@ -17,12 +17,12 @@ function render($array)
         } elseif ($child['type'] === 'changed') {
             return [$child['type'], $child['name'], $child['children']];
         } elseif ($child['type'] === 'nested') {
-            //var_dump($child);
-            return [$child['type'], array_map(function ($subChild) {
-                print_r($subChild);
-                print_r(nl2br(PHP_EOL));
-               print_r(nl2br(PHP_EOL));
-            }, $child)];
+         
+              array_map(function ($subChild) {
+                array_map(function ($subSubChild) {
+                    return [render($subSubChild)];
+                }, $subChild);
+            }, $child);
         }
 
         //print_r($child);
