@@ -9,19 +9,8 @@ use Symfony\Component\Yaml\Yaml;
 function getArrays()
 {
     //$before = Yaml::parse(file_get_contents('./before.json'), Yaml::PARSE_OBJECT_FOR_MAP);
-    $before= json_decode(file_get_contents(__DIR__ . '/../files/before.json'), true);
+    $before = json_decode(file_get_contents(__DIR__ . '/../files/before.json'), true);
     $after = json_decode(file_get_contents(__DIR__ . '/../files/after.json'), true);
 
-    $collectionBefore = collect($before);
-    $collectionAfter = collect($after);
-
-    return [$collectionBefore, $collectionAfter];
+    return [$before, $after];
 }
-
-
-
-
-
-
-
-
