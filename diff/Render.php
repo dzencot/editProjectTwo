@@ -19,9 +19,9 @@ function render($array)
         } elseif ($child['type'] === 'nested') {
          
               array_map(function ($subChild) {
-                array_map(function ($subSubChild) {
-                    return [render($subSubChild)];
-                }, $subChild);
+               
+                    return [render($subChild)];
+                
             }, $child);
         }
 
