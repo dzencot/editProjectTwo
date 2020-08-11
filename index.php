@@ -10,9 +10,10 @@ use function Dif\Dif\Render\render;
 
 $tree = diffArray($array1, $array2);
 
-$rend = render($tree);
+$render = render($tree);
 
-var_dump($rend);
 
+
+//var_dump($render);
 
 
