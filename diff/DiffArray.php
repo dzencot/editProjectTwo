@@ -24,9 +24,9 @@ function diffArray ($array1, $array2, $option = null)
             //значения НЕ объекты.
             if (!is_array($array1[$key]) and !is_array($array2[$key])) {
                 if ($array1[$key] === $array2[$key]) {
-                    return ['name' => $key, 'type' => 'has not changed', 'children' => $array1[$key]];
+                    return ['name' => $key, 'type' => ' ', 'children' => $array1[$key]];
                 } elseif ($array1[$key] !== $array2[$key]) {
-                    return ['name' => $key, 'type' => 'changed', 'children' => '-' . $array1[$key] . ' +' . $array2[$key]];
+                    return ['name' => $key, 'type' => 'changed', 'children' => '- ' . $key . ': ' . $array1[$key] . nl2br(PHP_EOL) . '+ ' . $key . ': ' . $array2[$key]];
                 }
              //значения объекты.
             } elseif (is_array($array1[$key]) and is_array($array2[$key])) {
