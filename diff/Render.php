@@ -4,11 +4,16 @@ namespace Dif\Dif\Render;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+
+
 function render($array, $depth)
 {
     //Делаем читаемый массив.
     $result = array_map(function ($child) use ($depth) {
         if ($child['type'] === '-') {
+           // var_dump($child['children']);
+            print_r(nl2br(PHP_EOL));
+
             if (!is_array($child['children'])) {
                 return "{$child['type']}  {$child['name']}: {$child['children']}";
             } elseif (is_array($child['children'])) {
@@ -21,18 +26,26 @@ function render($array, $depth)
             } elseif (is_array($child['children'])) {
                 return "{$child['type']} {$child['name']}: " . "{" . nl2br(PHP_EOL) . str_repeat('&nbsp;', $depth + 5 ) . implode(array_keys($child['children'])) . ": " . implode($child['children']) . nl2br(PHP_EOL) . str_repeat('&nbsp;', $depth ) . "}";
             }
+            // Одинаковые значения
         } elseif ($child['type'] === ' ') {
             if (!is_array($child['children'])) {
-                return "{$child['type']} {$child['name']}: {$child['children']}";
+                return "&nbsp; {$child['type']} {$child['name']}: {$child['children']}";
             } elseif (is_array($child['children'])) {
                 return "{$child['type']} {$child['name']}: " . "{" . nl2br(PHP_EOL) .  implode(array_keys($child['children'])) . ": " . implode($child['children']) . nl2br(PHP_EOL) . str_repeat('&nbsp;', $depth ) . "}";
             }
+        // Разные значения
         } elseif ($child['type'] === 'changed') {
+            // Строки
             if (!is_array($child['children'])) {
-                return "{$child['children']}";
+
+                return "{$child['childrenMinus']}" . nl2br(PHP_EOL) . str_repeat('&nbsp;', $depth ) . "{$child['childrenPlus']}";
+            // Объекты
             } elseif (is_array($child['children'])) {
+
                 return "{$child['type']} {$child['name']}: " . "{" . nl2br(PHP_EOL) . implode(array_keys($child['children'])) . ": " . implode($child['children']) . nl2br(PHP_EOL) . str_repeat('&nbsp;', $depth ) . "}";
+            // Объект и строка
             }
+
         } elseif ($child['type'] === 'nested') {
             unset($child['type']);
 
@@ -63,3 +76,8 @@ function renderWithDepth($array) {
     // Начинаем с глубины 0
     return render($array, 0);
 }
+
+
+
+
+
