@@ -6,51 +6,55 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use function Dif\Dif\DiffFiles\getArrays;
 use function Funct\null;
 
-function diffArray ($array1, $array2, $option = null)
+function diffArray ($array1, $array2, $depth)
 {
     $keys1 = array_keys($array1);
     $keys2 = array_keys($array2);
     $fish = array_unique(array_merge($keys1, $keys2));
 
-    $result = array_map(function ($key) use ($array1, $array2, $keys1, $keys2, $option) {
-        //ключ есть только в before.
+    $result = array_map(function ($key) use ($array1, $array2, $keys1, $keys2, $depth) {
+
+        // Удалённый, ключ есть только в before
         if (!in_array($key, $keys2)) {
-
             if (is_array($array1[$key])) {
-                return ['name' => $key, 'type' => '-', 'children' => array_keys($array1[$key])['0'] . ':' . dfs($key, $array1[$key])];
+
+                //return ['name' => $key, 'type' => 'removed', 'value' => array_keys($array1[$key])['0'] . ':' . dfs($array1[$key], $depth)];
+                return ['name' => $key, 'type' => 'removed', 'value' => dfs($array1[$key], $depth)];
             }
+            return ['name' => $key, 'type' => 'removed', 'value' => $array1[$key]];
 
-            // Временно закрыл
-            //return ['name' => $key, 'type' => '-', 'children' => $array1[$key]];
-
-        //ключ есть только в after.
+        // Добавленный, ключ есть только в after
         } elseif (!in_array($key, $keys1)) {
             if (is_array($array2[$key])) {
-                return ['name' => $key, 'type' => '-', 'children' => array_keys($array2[$key])['0'] . ':' . dfs($key, $array2[$key])];
+                return ['name' => $key, 'type' => 'add', 'value' => dfs($array2[$key], $depth)];
             }
-
-            return ['name' => $key, 'type' => '+', 'children' => $array2[$key]];
+            return ['name' => $key, 'type' => 'add', 'value' => $array2[$key]];
 
         // Одинаковые ключи
-        } elseif (in_array($key, $keys1) and in_array($key, $keys2)) {
-            // Значения строки
-            if (!is_array($array1[$key]) and !is_array($array2[$key])) {
-                if ($array1[$key] === $array2[$key]) {
-                    return ['name' => $key, 'type' => ' ', 'children' => $array1[$key]];
-                    //РЫБА--------------------------------------
-                } elseif ($array1[$key] !== $array2[$key]) {
-                    return ['name' => $key, 'type' => 'changed', 'childrenMinus' => '- ' . $key . ': ' . $array1[$key], 'childrenPlus' => '+ ' . $key . ': ' . $array2[$key]];
-                }
+        } else {
+
             // Значения объекты
-            } elseif (is_array($array1[$key]) and is_array($array2[$key])) {
-                return [$key => diffArray($array1[$key], $array2[$key]), 'type' => 'nested'];
+            if (is_array($array1[$key]) and is_array($array2[$key])) {
+                // В depth закрывающая скобка
+                return [$key => diffArray($array1[$key], $array2[$key], $depth),  'type' => 'nested'];
+
             // Значения объект и строка
             } elseif (is_array($array1[$key]) and !is_array($array2[$key]) or !is_array($array1[$key]) and is_array($array2[$key])) {
                 if (is_array($array1[$key]) and !is_array($array2[$key])) {
-                    return ['name' => $key, 'type' => 'changed', 'childrenMinus' => '- ' . $key . ': ' . array_keys($array1[$key])['0'] . ':' . dfs($key, $array1[$key]), 'childrenPlus' => '+ ' . $key . ': ' . $array2[$key]];
-                } elseif (!is_array($array1[$key]) and is_array($array2[$key])) {
-                    return ['name' => $key, 'type' => 'changed', 'childrenMinus' => '- ' . $key . ': ' . $array1[$key], 'childrenPlus' => '+ ' . $key . ': ' . array_keys($array2[$key])['0'] . ':' . dfs($key, $array2[$key])];
+                    // В depth закрывающая скобка
+                    return ['name' => $key, 'type' => 'changed', 'oldValue' =>  $key . ': ' .  dfs($array1[$key], $depth), 'newValue' => $key . ': ' . $array2[$key]];
+                } else {
+                    // В depth закрывающая скобка
+                    return ['name' => $key, 'type' => 'changed', 'oldValue' => $key . ': ' . $array1[$key], 'newValue' => $key . ': ' .  dfs($array2[$key], $depth)];
                 }
+
+            // Значения строки
+            } else {
+                if ($array1[$key] === $array2[$key]) {
+                    return ['name' => $key, 'type' => 'unchanged', 'value' => $array1[$key]];
+                }
+                return ['name' => $key, 'type' => 'changed', 'oldValue' => $key . ': ' . $array1[$key], 'newValue' =>$key . ': ' . $array2[$key]];
+
             }
         }
     }, $fish);
@@ -58,33 +62,21 @@ function diffArray ($array1, $array2, $option = null)
 }
 
 // Вложенный массив в строку.
-function dfs($key, $subArray) {
-    $keys = array_keys($subArray);
+function dfs($subArray, $depth) {
+    if (!is_array($subArray)) {
+        return $subArray;
+    }
 
-    $resultRender = array_reduce($subArray, function ($acc, $child) use ($key, $keys) {
+    $result = array_map(function ($key) use ($subArray, $depth) {
+        // Нормуль для всего, кроме объектов удаленных или добавленных
+        // В depth закрывающая скобка
+        return "{" . nl2br(PHP_EOL) . str_repeat('&nbsp;', $depth) . "{$key}: " .  dfs($subArray[$key], 15) . nl2br(PHP_EOL) . str_repeat('&nbsp;', 8) . "}";
 
-        // Пробую пробежаться по ключам
-      /*  array_map(function ($subKeys) use ($child, $key) {
-            //if ($child) {
-            print_r($subKeys);
-            //print_r(nl2br(PHP_EOL));
-            //print_r($subKeys);
+        // Делаю для объектов удаленных или добавленных
+       //return str_repeat('&nbsp;', $depth) . "{$key}: " . "{" .  dfs($subArray[$key], $depth) .  nl2br(PHP_EOL) . str_repeat('&nbsp;', $depth)  ;
+    }, array_keys($subArray));
 
-            print_r(nl2br(PHP_EOL));
-        //}
-        }, $keys);*/
-
-        if (is_array($child)) {
-            $acc .= array_keys($child)['0'] . ': {' . nl2br(PHP_EOL) . dfs($key, $child)  .  '}' . nl2br(PHP_EOL);
-            return $acc;
-        }
-        $acc .=  $child . nl2br(PHP_EOL);
-        return $acc;
-    }, '');
-
-
-    return $resultRender;
-
+    return implode($result);
 }
 
 
